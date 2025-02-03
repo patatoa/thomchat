@@ -33,7 +33,7 @@ jobs:
         run: |
           FRONTEND_REPO=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/thomchat-frontend
           docker build \
-          --build-arg REACT_APP_SOCKET_URL=${{ vars.REACT_APP_SOCKET_URL }} \
+          --build-arg VITE_SOCKET_URL="${{ vars.REACT_APP_SOCKET_URL }}" \
           -t thomchat-frontend ./frontend
           docker tag thomchat-frontend:latest $FRONTEND_REPO:latest
           docker push $FRONTEND_REPO:latest
@@ -64,26 +64,7 @@ jobs:
                   "ImageConfiguration": {
                     "Port": "3000",
                     "RuntimeEnvironmentVariables": {
-                      "REACT_APP_SOCKET_URL": "${{ vars.REACT_APP_SOCKET_URL }}"
-                    }
-                  }
-                },
-                "AutoDeploymentsEnabled": true
-              }'
-          else
-            echo "Updating frontend-service..."
-            aws apprunner update-service --service-arn $SERVICE_ARN \
-              --source-configuration '{
-                "AuthenticationConfiguration": {
-                  "AccessRoleArn": "'"$IAM_ROLE_ARN"'"
-                },
-                "ImageRepository": {
-                  "ImageIdentifier": "${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/thomchat-frontend:latest",
-                  "ImageRepositoryType": "ECR",
-                  "ImageConfiguration": {
-                    "Port": "3000",
-                    "RuntimeEnvironmentVariables": {
-                      "REACT_APP_SOCKET_URL": "${{ vars.REACT_APP_SOCKET_URL }}"
+                      "VITE_SOCKET_URL": "${{ vars.REACT_APP_SOCKET_URL }}"
                     }
                   }
                 },
@@ -100,22 +81,6 @@ jobs:
           if [ -z "$SERVICE_ARN" ] || [ "$SERVICE_ARN" == "None" ]; then
             echo "Creating backend-service..."
             aws apprunner create-service --service-name thomchat-backend-service \
-              --source-configuration '{
-                "AuthenticationConfiguration": {
-                  "AccessRoleArn": "'"$IAM_ROLE_ARN"'"
-                },
-                "ImageRepository": {
-                  "ImageIdentifier": "${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/thomchat-backend:latest",
-                  "ImageRepositoryType": "ECR",
-                  "ImageConfiguration": {
-                    "Port": "8000"
-                  }
-                },
-                "AutoDeploymentsEnabled": true
-              }'
-          else
-            echo "Updating backend-service..."
-            aws apprunner update-service --service-arn $SERVICE_ARN \
               --source-configuration '{
                 "AuthenticationConfiguration": {
                   "AccessRoleArn": "'"$IAM_ROLE_ARN"'"

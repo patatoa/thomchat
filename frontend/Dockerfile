@@ -3,11 +3,12 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install
 COPY . .
-RUN npm run build
+ARG VITE_SOCKET_URL
+ENV VITE_SOCKET_URL=$VITE_SOCKET_URL
+RUN echo "Building React with VITE_SOCKET_URL=$VITE_SOCKET_URL"
+RUN VITE_SOCKET_URL=$VITE_SOCKET_URL npm run build
 
 FROM caddy:2.6.2-alpine
-ARG REACT_APP_SOCKET_URL
-ENV REACT_APP_SOCKET_URL=$REACT_APP_SOCKET_URL
 WORKDIR /srv
 COPY --from=build /app/dist .
 COPY Caddyfile /etc/caddy/Caddyfile
