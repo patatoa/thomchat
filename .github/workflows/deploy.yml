@@ -62,9 +62,13 @@ jobs:
                   "ImageIdentifier": "${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/thomchat-frontend:latest",
                   "ImageRepositoryType": "ECR",
                   "ImageConfiguration": {
-                    "Port": "3000"
+                    "Port": "3000",
+                    "RuntimeEnvironmentVariables": {
+                      "REACT_APP_SOCKET_URL": "${{ vars.REACT_APP_SOCKET_URL }}"
+                    }
                   }
-                }
+                },
+                "AutoDeploymentsEnabled": true
               }'
           else
             echo "Updating frontend-service..."
@@ -77,9 +81,13 @@ jobs:
                   "ImageIdentifier": "${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/thomchat-frontend:latest",
                   "ImageRepositoryType": "ECR",
                   "ImageConfiguration": {
-                    "Port": "3000"
+                    "Port": "3000",
+                    "RuntimeEnvironmentVariables": {
+                      "REACT_APP_SOCKET_URL": "${{ vars.REACT_APP_SOCKET_URL }}"
+                    }
                   }
-                }
+                },
+                "AutoDeploymentsEnabled": true
               }'
           fi
 
@@ -102,7 +110,8 @@ jobs:
                   "ImageConfiguration": {
                     "Port": "8000"
                   }
-                }
+                },
+                "AutoDeploymentsEnabled": true
               }'
           else
             echo "Updating backend-service..."
@@ -117,6 +126,7 @@ jobs:
                   "ImageConfiguration": {
                     "Port": "8000"
                   }
-                }
+                },
+                "AutoDeploymentsEnabled": true
               }'
           fi
