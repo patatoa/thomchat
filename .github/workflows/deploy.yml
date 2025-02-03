@@ -1,0 +1,60 @@
+name: Deploy to AWS App Runner
+
+on:
+  push:
+    branches:
+      - main  
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+          docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+      - name: Build & Push Frontend Image
+        run: |
+          FRONTEND_REPO=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/thomchat-frontend
+          docker build -t thomchat-frontend ./frontend
+          docker tag thomchat-frontend:latest $FRONTEND_REPO:latest
+          docker push $FRONTEND_REPO:latest
+
+      - name: Build & Push Backend Image
+        run: |
+          BACKEND_REPO=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/thomchat-backend
+          docker build -t thomchat-backend ./backend
+          docker tag thomchat-backend:latest $BACKEND_REPO:latest
+          docker push $BACKEND_REPO:latest
+
+      - name: Deploy Frontend to AWS App Runner
+        run: |
+          aws apprunner create-service --service-name thomchat-frontend-service \
+            --source-configuration ImageRepository="{ImageIdentifier=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/thomchat-frontend:latest,ImageRepositoryType=ECR}" \
+            --port 3000 || \
+          aws apprunner update-service --service-arn $(aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='thomchat-frontend-service'].ServiceArn" --output text) \
+            --source-configuration ImageRepository="{ImageIdentifier=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/thomchat-frontend:latest,ImageRepositoryType=ECR}"
+
+      - name: Deploy Backend to AWS App Runner
+        run: |
+          aws apprunner create-service --service-name thomchat-backend-service \
+            --source-configuration ImageRepository="{ImageIdentifier=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/thomchat-backend:latest,ImageRepositoryType=ECR}" \
+            --port 8000 || \
+          aws apprunner update-service --service-arn $(aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='thomchat-backend-service'].ServiceArn" --output text) \
+            --source-configuration ImageRepository="{ImageIdentifier=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/thomchat-backend:latest,ImageRepositoryType=ECR}"
