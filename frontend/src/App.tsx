@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import useWebSocket from "react-use-websocket";
 
-const SOCKET_URL = "ws://localhost:8000";
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || "ws://localhost:8000";
 
 const App: React.FC = () => {
   const [message, setMessage] = useState<string>("");

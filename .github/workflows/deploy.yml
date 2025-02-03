@@ -32,7 +32,9 @@ jobs:
       - name: Build & Push Frontend Image
         run: |
           FRONTEND_REPO=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/thomchat-frontend
-          docker build -t thomchat-frontend ./frontend
+          docker build \
+          --build-arg REACT_APP_SOCKET_URL=${{ vars.REACT_APP_SOCKET_URL }} \
+          -t thomchat-frontend ./frontend
           docker tag thomchat-frontend:latest $FRONTEND_REPO:latest
           docker push $FRONTEND_REPO:latest
 

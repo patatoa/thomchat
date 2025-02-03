@@ -6,6 +6,8 @@ COPY . .
 RUN npm run build
 
 FROM caddy:2.6.2-alpine
+ARG REACT_APP_SOCKET_URL
+ENV REACT_APP_SOCKET_URL=$REACT_APP_SOCKET_URL
 WORKDIR /srv
 COPY --from=build /app/dist .
 COPY Caddyfile /etc/caddy/Caddyfile
