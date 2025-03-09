@@ -10,5 +10,5 @@ COPY . .
 # Expose the WebSocket server port
 EXPOSE 8000
 
-# Run the Deno server
-CMD ["deno", "run", "--allow-net", "server.ts"]
+# Run the Deno server with required permissions
+CMD ["deno", "run", "--allow-net", "--allow-env", "--allow-read", "server.ts"]

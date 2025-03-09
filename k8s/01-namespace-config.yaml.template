@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: thomchat-app
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: thomchat-app
+data:
+  # Using secure WebSockets with the domain name
+  VITE_SOCKET_URL: "wss://${DOMAIN_NAME}:443"
+  KAFKA_BROKERS: "kafka-service:9092"
