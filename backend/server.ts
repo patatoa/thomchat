@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std/http/server.ts";
-import { Kafka } from "https://deno.land/x/kafkajs@v2.2.4/mod.ts";
+import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
+import { Kafka } from "npm:kafkajs@2.2.4";
 
 // Kafka configuration
 const kafka = new Kafka({

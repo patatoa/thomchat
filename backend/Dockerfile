@@ -11,4 +11,4 @@ COPY . .
 EXPOSE 8000
 
 # Run the Deno server with required permissions
-CMD ["deno", "run", "--allow-net", "--allow-env", "--allow-read", "server.ts"]
+CMD ["deno", "run", "--allow-net", "--allow-env", "--allow-read", "--allow-npm", "server.ts"]
